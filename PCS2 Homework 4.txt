@@ -1,0 +1,398 @@
+Complementing a Strand of DNA 
+
+def complementar(s):
+    opstrand = ''
+    reverse = ''
+    Dic = {'C':'G','G':'C','A':'T','T':'A'}
+    for i in s:
+        if i in 'ATCG':
+            opstrand += Dic[i]
+    for e in range(len(opstrand)-1, -1, -1):
+        reverse += opstrand[e]
+    return reverse
+
+
+with open('rosalind_revc.txt','r') as file:
+    DNA = file.read()
+
+print(complementar(DNA))
+
+
+
+
+Computing GC Content 
+
+with open('rosalind_gc.txt','r') as file:
+    content = file.read().splitlines()
+final, lst = [], []
+for i in range(len(content)):
+    if content[i][0] == '>':
+        final.append(lst)
+        lst = [content[i][1:]]
+    else:
+        lst.append(content[i])
+final.append(lst)
+final.pop(0)
+Final = []
+for i in range(len(final)):
+    DNA = ''
+    for j in range(1,len(final[i])):
+        DNA += final[i][j]
+    Final.append([final[i][0],DNA])
+GC_content = []
+for i in range(len(Final)):
+    record = "%.6f" % round((Final[i][1].count('C') + Final[i][1].count('G')) / len(Final[i][1])*100, 6)
+    GC_content.append([record, Final[i][0]])
+
+Max = max(GC_content)
+
+print(Max[1])
+print(Max[0])
+
+
+
+
+
+Consensus and Profile 
+
+def Consensus(DNAs):
+    profile = []
+    for i in range(len(DNAs[0])):
+        A,C,T,G = 0, 0, 0, 0
+        for j in range(len(DNAs)):
+            if DNAs[j][i] == 'A':
+                A += 1
+            elif DNAs[j][i] == 'C':
+                C += 1
+            elif DNAs[j][i] == 'T':
+                T += 1
+            elif DNAs[j][i] == 'G':
+                G += 1
+        profile.append([[A,'A'],[C,'C'],[G,'G'],[T,'T']])
+
+    consensus = ''
+    for row in profile:
+        common = max(row)
+        consensus += common[1]
+    print(consensus)
+    for i in range(4):
+        record = profile[0][i][1] + ': '
+        for j in range(len(profile)):
+            record += str(profile[j][i][0]) + ' '
+        print(record)
+
+
+
+with open('rosalind_cons.txt','r') as file:
+    content = file.read()
+DNAs_number, lines, line_number, DNAs = content.count('>'), content.splitlines(), 0, []
+for i in range(DNAs_number):
+    DNA = ''
+    line_number += 1
+    while lines[line_number][0] != '>':
+        DNA += lines[line_number]
+        line_number += 1
+        if line_number+1 > len(lines):
+            break
+    DNAs.append(DNA)
+
+Consensus(DNAs)
+
+
+
+
+
+
+Counting DNA Nucleotides 
+
+def counter(s):
+    A,T,C,G=0,0,0,0
+    for i in s:
+        if i == 'A':
+            A += 1
+        elif i == 'T':
+            T += 1
+        elif i == 'C':
+            C += 1
+        elif i == 'G':
+            G += 1
+    return str(A)+' '+str(C)+' '+str(G)+' '+str(T)
+
+
+with open('rosalind_dna.txt','r') as file:
+    DNA = file.read()
+
+print(counter(DNA))
+
+
+
+
+
+Enumerating k-mers Lexicographically 
+
+import itertools
+
+with open("rosalind_lexf.txt", 'r') as f:
+    string = f.readline().split()
+    n = int(f.readline().strip())
+    result = list(itertools.product(string, repeat = n))
+    print("\n".join(["".join(x) for x in result]))
+
+
+
+
+Finding a Motif in DNA 
+
+def find_motif(s,t):
+    positions = ''
+    for i in range(len(s)):
+        if s[i] == t[0]:
+            if s[i:i+len(t)] == t:
+                positions += str(i+1)+' '
+    return positions
+
+
+with open('rosalind_subs.txt','r') as file:
+    content = file.read()
+DNA, subDNA = content.splitlines()
+print(find_motif(DNA, subDNA))
+
+
+
+
+Finding a Shared Motif 
+
+def readFASTA(file):
+    f = open(file)
+    lines = f.readlines()
+    des = list()
+    seqs = list()
+    first_line = True
+    for i in range(len(lines)):
+        line = lines[i].rstrip()
+        if line[0] == '>' and first_line == True:
+            des.append(line[1:])
+            first_line = False
+            seq = ''
+        elif line[0] == '>' and first_line == False:
+            des.append(line[1:])
+            seqs.append(seq)
+            seq = ''
+        else:
+            seq += line
+    seqs.append(seq)    
+    return des, seqs
+    
+def lcs(strs):
+    maxK = min([len(x) for x in strs])
+    kmer = set()
+    seq = strs[0]
+    strs = strs[1:]    
+    for k in reversed(range(maxK)):
+        for i in range(maxK+1-k):
+            kmer.add(seq[i:i+k])        
+        for kk in kmer:
+            found = True
+            for x in strs:
+                if x.find(kk) == -1:
+                    found = False
+                    break
+            if found == True:
+                return(kk)
+        kmer = set()
+
+if __name__ == "__main__":
+  description, sequence = readFASTA("rosalind_lcsm.txt")
+  print(lcs(sequence))
+
+
+
+
+
+Locating Restriction Sites 
+
+def palindrome(s, k):
+	#k must be even numbers
+	palindrome_pairs = [('A','T'),('T','A'),('G','C'),('C','G')]
+	for i in range(len(s)-k+1):
+		test = s[i:i+k]
+		if all((test[j],test[k-j-1]) in palindrome_pairs for j in range(k)):
+			#print(test, i+1, k)
+			print(i+1, k)
+
+string = 'ATATACAATGGCGAATGGTCCGTACGTCTATATCCCATCTAGCCACACAAGGATACACTAAGAGCAAACCTGCGATACCTACGAACCATGCCCTGGAAACTATGTGCGGGGCCTGTGACATGGCCAAAGGGGACGGGAAGCCACCAATGGCATCGCCTCACGGGGAGCGATTTTTTTAGAAGTTCCTTAAACGAGTCTTCCGCCACCCCAATTCCTTGGCATGCTATAGACTTCACCGAACTGAGTGCGCGGCGTGGGCGGCATACAAGCGAAATTCCATTTGGTGTGTGGGGATAGTCTCCTTCTGTAACCTGCCCTGACAAGTCGGAACGACACAATGGCTGCAGGGGCCTAGTAACTGATCGTGGCAGAACGAAGTATCCTCAAAACTACCCGACACCAAGCACGCACCAGCTGTTAAACAGGTCGTAATACCCTTGAACACGCAACAAGTCATAGTTCTTGGAATCAGGTTAGGGGTTTAAACCCAGTAGCATGGACACTATTAGGGTTTGTCCCAACACGGAAATTTCTTCGCTGTATATTTGGAGTGTCACAAAGGCGCTCGCCGCGGACAAGCACTTACATATCGGGGCGGATCGGTTGTCCGGATGTTTCGCTACTGGACCAAGTCGACACCTGCATGGCAGAGGTCGATTCAAAGTTGCCTGAAGCGAATTCTGTTACGATCGTCATTTGAATCGAGGGGGGGTCCACCGTGGAGACTGCGCAGGTCGGTACAGTCTACGCGGCCGTTGGAGCCGATATCCCCGATGCGACCGTCGCACGACTTGGCACAGCGCGTCGCTGCGTCGAGTCGCGTTCCCTACTCATATTGGTAAAATTGCGGACCCTCGAGAGATGCTTTTCCGGTGAGAACATCGCTCTCTGGAGAGCTCGGGAGCCTCCGCTAGCGGGACCCGCGTGGCAATAAGTGTACGTGATACGACCCCACTATGAGGGCGC'
+for i in range(4,14,2):
+	palindrome(string, i)
+
+
+
+
+
+Rabbits and Recurrence Relations 
+
+def liverabbits(months,k):
+    F1 = 1
+    F2 = 1
+    for i in range(months-2):
+        F3 = F1*k+F2
+        F1 = F2
+        F2 = F3
+    return F3
+
+
+with open('rosalind_fib.txt','r') as file:
+    content = file.read()
+n,k = content.split(' ')
+print(liverabbits(int(n),int(k)))
+
+
+
+
+
+RNA Splicing 
+
+def translate_rna(sequence):
+    codonTable = {
+    'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+    'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+    'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+    'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+    'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+    'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+    'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+    'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+    'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+    'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+    'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+    'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+    'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+    'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+    'TAC':'Y', 'TAT':'Y', 'TAA':'', 'TAG':'',
+    'TGC':'C', 'TGT':'C', 'TGA':'', 'TGG':'W',
+    }
+    proUeinsequence = ''
+
+    for n in range(0,len(sequence),3):
+        if sequence[n:n+3] in codonTable.keys():
+            proUeinsequence += codonTable[sequence[n:n+3]]
+    return proUeinsequence
+
+seq_list = []
+stseq = ''
+
+for line in open('rosalind_splc6.txt'):
+    if line[0] == '>':
+        if stseq != '':
+            seq_list.append(stseq)
+            stseq = ''
+    else:
+        stseq = stseq + line.strip('\n')
+seq_list.append(stseq)
+
+
+for intron in seq_list[1:]:
+    
+    seq_list[0]=seq_list[0].replace(intron,'')
+
+print (translate_rna(seq_list[0]))
+
+
+
+
+
+Transcribing DNA into RNA 
+
+
+import fileinput
+
+for sequence in fileinput.input('rosalind_rna.txt'):
+        rna = sequence.replace('T','U')
+        print (rna)
+
+
+
+
+
+Longest Increasing Subsequence 
+
+
+data = []                                
+with open('rosalind_lgis.txt', 'r') as f:   
+    for line in f:                      
+        for nr in line.split():          
+            data.append(int(nr))         
+perm = data[1:]
+
+
+def increasing(seq):
+    P = [None] * len(seq)
+    M = [None] * len(seq)
+
+    L = 1
+    M[0] = 0
+    for i in range(1, len(seq)):
+        lo = 0
+        hi = L
+        if seq[M[hi - 1]] < seq[i]:
+            j = hi
+        else:
+            while hi - lo > 1:
+                mid = (hi + lo) // 2
+                if seq[M[mid - 1]] < seq[i]:
+                    lo = mid
+                else:
+                    hi = mid
+
+            j = lo
+        P[i] = M[j - 1]
+        if j == L or seq[i] < seq[M[j]]:
+            M[j] = i
+            L = max(L, j + 1)
+
+    result = []
+    pos = M[L - 1]
+    for k in range(L):
+        result.append(seq[pos])
+        pos = P[pos]
+
+    return (result[::-1])
+
+
+def decreasing(seq):
+    P = [None] * len(seq)
+    M = [None] * len(seq)
+
+    L = 1
+    M[0] = 0
+    for i in range(1, len(seq)):
+        lo = 0
+        hi = L
+        if seq[M[hi - 1]] > seq[i]:
+            j = hi
+        else:
+            while hi - lo > 1:
+                mid = (hi + lo) // 2
+                if seq[M[mid - 1]] > seq[i]:
+                    lo = mid
+                else:
+                    hi = mid
+
+            j = lo
+        P[i] = M[j - 1]
+        if j == L or seq[i] > seq[M[j]]:
+            M[j] = i
+            L = max(L, j + 1)
+
+    result = []
+    pos = M[L - 1]
+    for k in range(L):
+        result.append(seq[pos])
+        pos = P[pos]
+
+    return (result[::-1])
+
+incr = increasing(perm)
+decr = decreasing(perm)
+
+print(*incr)
+print(*decr)
